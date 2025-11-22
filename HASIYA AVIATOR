@@ -1,0 +1,21 @@
+return "❌ Very Unlikely to Hit 10x";
+      }
+    }
+
+    function checkOdds() {
+      // Dummy data: replace with real crash values if available
+      let last10 = [1.2, 3.5, 11.3, 1.0, 9.8, 2.4, 1.1, 10.2, 5.6, 14.0];
+      let prediction = predictHighOddChance(last10);
+      document.getElementById("result").innerText = prediction;
+    }
+  </script>
+
+</body>
+</html>
+```
+
+---
+
+මෙය "online link" එකක් ලෙස host කරන්න නම්, mameoya GitHub Pages, Netlify, Firebase Hosting use කරන්න පුළුවන්. 
+
+ඔයාට *host කරන්න දෙන link එකක් ඕනෙද?* (Free site ekakata upload karala).
