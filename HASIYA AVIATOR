@@ -1,21 +1,234 @@
-return "❌ Very Unlikely to Hit 10x";
-      }
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HASHAN SERVICE - APEX STEALTH V30</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --primary: #00f2ff;
+            --secondary: #05ffa1;
+            --alert: #ff003c;
+            --dark-bg: #02060c;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Lightning Grid Animation */
+        .bg-overlay {
+            position: absolute; width: 100%; height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        .main-container {
+            width: 480px;
+            padding: 35px;
+            background: rgba(5, 15, 25, 0.95);
+            border: 1px solid var(--primary);
+            border-radius: 5px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.1);
+        }
+
+        /* Top Status Bar */
+        .status-header {
+            display: flex; justify-content: space-between;
+            font-size: 10px; color: var(--secondary);
+            border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+            padding-bottom: 10px; margin-bottom: 20px;
+        }
+
+        .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 34px; font-weight: 900;
+            letter-spacing: 4px; color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+            margin: 0;
+        }
+
+        .tagline { font-size: 9px; letter-spacing: 3px; color: #888; margin-bottom: 25px; }
+
+        /* Algorithm Display */
+        #algo-monitor { display: none; margin: 20px 0; border: 1px solid #1a2c3e; padding: 15px; background: #000; }
+        .graph-line { height: 2px; background: var(--primary); width: 0%; animation: graphGrow 3s forwards; box-shadow: 0 0 10px var(--primary); }
+        @keyframes graphGrow { to { width: 100%; } }
+
+        /* Result Cards */
+        .signal-grid { display: none; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .signal-box {
+            background: rgba(0, 242, 255, 0.03);
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: relative;
+            transition: 0.3s;
+        }
+        .signal-box:hover { background: rgba(0, 242, 255, 0.07); }
+
+        .odd-display { font-family: 'Orbitron'; font-size: 38px; color: #fff; text-shadow: 0 0 15px var(--secondary); }
+        .time-info { text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px; }
+
+        .badge { font-size: 9px; background: var(--secondary); color: #000; padding: 2px 6px; font-weight: 900; margin-bottom: 5px; display: inline-block; }
+        .hit-time { font-size: 20px; font-weight: 900; color: var(--primary); margin-top: 5px; }
+
+        /* Action Buttons */
+        .cyber-btn {
+            width: 100%;
+            padding: 20px;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-family: 'Orbitron';
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cyber-btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 30px var(--primary); }
+
+        input {
+            width: 100%; box-sizing: border-box; padding: 18px;
+            background: #000; border: 1px solid #222;
+            color: var(--primary); font-family: 'Orbitron';
+            text-align: center; margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-overlay"></div>
+
+<div class="main-container">
+    <div class="status-header">
+        <span>ENCRYPTED CONNECTION: AES-256</span>
+        <span id="live-time">00:00:00</span>
+    </div>
+
+    <div class="brand">HASHAN</div>
+    <div class="tagline">STEALTH ANALYSIS SYSTEM V30.0</div>
+
+    <div id="auth-gate">
+        <input type="password" id="access-key" placeholder="INPUT VIP KEY">
+        <button class="cyber-btn" onclick="validate()">AUTHORIZE</button>
+    </div>
+
+    <div id="main-interface" style="display: none;">
+        <div id="algo-monitor">
+            <div style="font-size: 10px; color: var(--primary); margin-bottom: 10px;">PROBABILITY MATRIX SCANNING...</div>
+            <div class="graph-line"></div>
+            <div id="logs" style="font-size: 9px; color: var(--secondary); margin-top: 10px; height: 40px; overflow: hidden;"></div>
+        </div>
+
+        <div class="signal-grid" id="signal-grid">
+            </div>
+
+        <button class="cyber-btn" id="run-btn" onclick="executeScan()">EXECUTE DEEP SCAN</button>
+    </div>
+</div>
+
+<script>
+    // Real-time Clock
+    setInterval(() => {
+        const d = new Date();
+        document.getElementById('live-time').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0') + ":" + d.getSeconds().toString().padStart(2,'0');
+    }, 1000);
+
+    function validate() {
+        if(document.getElementById('access-key').value === "0901") {
+            document.getElementById('auth-gate').style.display = 'none';
+            document.getElementById('main-interface').style.display = 'block';
+        } else { alert("ACCESS DENIED!"); }
     }
 
-    function checkOdds() {
-      // Dummy data: replace with real crash values if available
-      let last10 = [1.2, 3.5, 11.3, 1.0, 9.8, 2.4, 1.1, 10.2, 5.6, 14.0];
-      let prediction = predictHighOddChance(last10);
-      document.getElementById("result").innerText = prediction;
+    function executeScan() {
+        const btn = document.getElementById('run-btn');
+        const monitor = document.getElementById('algo-monitor');
+        const grid = document.getElementById('signal-grid');
+        const logs = document.getElementById('logs');
+
+        btn.style.display = 'none';
+        grid.style.display = 'none';
+        monitor.style.display = 'block';
+        logs.innerHTML = "";
+
+        const logSequence = [
+            "> BRUTEFORCING RTP SEEDS...",
+            "> CAPTURING SERVER PACKETS...",
+            "> CALCULATING MULTIPLIER FREQUENCY...",
+            "> 7.00X-10.00X WINDOWS IDENTIFIED.",
+            "> SCAN SUCCESSFUL."
+        ];
+
+        let i = 0;
+        const interval = setInterval(() => {
+            if(i < logSequence.length) {
+                logs.innerHTML += logSequence[i] + "<br>";
+                i++;
+            } else {
+                clearInterval(interval);
+                setTimeout(renderResults, 1000);
+            }
+        }, 800);
     }
-  </script>
+
+    function renderResults() {
+        document.getElementById('algo-monitor').style.display = 'none';
+        const grid = document.getElementById('signal-grid');
+        grid.style.display = 'flex';
+        grid.innerHTML = "";
+        
+        document.getElementById('run-btn').style.display = 'block';
+        document.getElementById('run-btn').innerText = "REFRESH STEALTH SCAN";
+
+        for(let x=1; x<=2; x++) {
+            const odd = (Math.random() * 3 + 7).toFixed(2);
+            const now = new Date();
+            const startM = now.getMinutes() + (x * 15);
+            const hitM = startM + Math.floor(Math.random() * 5);
+            const endM = startM + 12;
+
+            const format = (m) => {
+                const d = new Date();
+                d.setMinutes(m);
+                return d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
+            };
+
+            grid.innerHTML += `
+                <div class="signal-box">
+                    <div>
+                        <div class="badge">TARGET MULTIPLIER</div>
+                        <div class="odd-display">${odd}x</div>
+                    </div>
+                    <div class="time-info">
+                        <div style="font-size:9px; color:#666;">WINDOW: ${format(startM)}-${format(endM)}</div>
+                        <div class="badge" style="background:var(--primary)">BEST ENTRY</div>
+                        <div class="hit-time">${format(hitM)}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+</script>
 
 </body>
 </html>
-```
-
----
-
-මෙය "online link" එකක් ලෙස host කරන්න නම්, mameoya GitHub Pages, Netlify, Firebase Hosting use කරන්න පුළුවන්. 
-
-ඔයාට *host කරන්න දෙන link එකක් ඕනෙද?* (Free site ekakata upload karala).
