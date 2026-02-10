@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel - Hashan Service</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #050a14; color: white; display: flex; justify-content: center; padding: 20px; }
+        .admin-card { background: #0d1117; width: 100%; max-width: 500px; padding: 30px; border-radius: 15px; border: 1px solid #00d2ff; box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); }
+        h2 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #30363d; background: #010409; color: white; box-sizing: border-box; }
+        button { width: 100%; background: #00ff88; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; color: #8b949e; font-size: 14px; padding: 10px; border-bottom: 1px solid #30363d; }
+        td { padding: 12px; border-bottom: 1px solid #30363d; font-family: monospace; }
+        .btn-del { background: #ff3131; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; border: none; font-size: 12px; }
+        #auth-box { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="admin-card">
+    <div id="auth-box">
+        <h2>Admin Login</h2>
+        <p style="font-size: 12px; color: #8b949e;">System එකට ඇතුළු වීමට Password එක ලබා දෙන්න.</p>
+        <input type="password" id="adminPass" placeholder="Admin Password">
+        <button onclick="checkAdminPass()">Login</button>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+        <h2>Device ID Admin Panel</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="devInput" placeholder="Enter User Device ID (e.g. HS-XXXX)">
+            <button onclick="addDevice()">Approve Device</button>
+        </div>
+
+        <h3>Approved Devices</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Device ID</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // --- මෙතැනට ඔයාගේ Firebase Config එක අනිවාර්යයෙන්ම දාන්න ---
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // ඔයා ඉල්ලපු Password එක
+    const SECRET_PASS = "hashan2009"; 
+
+    // Login පරීක්ෂා කිරීම
+    function checkAdminPass() {
+        const pass = document.getElementById('adminPass').value;
+        if(pass === SECRET_PASS) {
+            document.getElementById('auth-box').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            loadApprovedDevices();
+        } else {
+            alert("Password වැරදියි! නැවත උත්සාහ කරන්න.");
+        }
+    }
+
+    // Device එකක් Approve කිරීම
+    function addDevice() {
+        const id = document.getElementById('devInput').value.trim();
+        if(!id) return;
+
+        database.ref('approved_devices/' + id).set(true)
+        .then(() => {
+            document.getElementById('devInput').value = '';
+            alert("Device Approved: " + id);
+        })
+        .catch(err => alert("Error: " + err));
+    }
+
+    // Database එකේ ඉන්න අය List එකට ගැනීම
+    function loadApprovedDevices() {
+        database.ref('approved_devices').on('value', (snapshot) => {
+            const listBody = document.getElementById('list');
+            listBody.innerHTML = '';
+            snapshot.forEach((childSnapshot) => {
+                const id = childSnapshot.key;
+                listBody.innerHTML += `
+                    <tr>
+                        <td>${id}</td>
+                        <td><button class="btn-del" onclick="removeDevice('${id}')">Remove</button></td>
+                    </tr>
+                `;
+            });
+        });
+    }
+
+    // Device එකක් ඉවත් කිරීම
+    function removeDevice(id) {
+        if(confirm("මෙම Device එක ඉවත් කිරීමට අවශ්‍යද?")) {
+            database.ref('approved_devices/' + id).remove();
+        }
+    }
+</script>
+</body>
+</html>
